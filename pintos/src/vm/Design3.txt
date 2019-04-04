@@ -1,0 +1,148 @@
+		           +---------------------------+
+       	           |         CIS 520           |
+		           | PROJECT 3: Virtual Memory |
+		           |     DESIGN DOCUMENT       |
+		           +---------------------------+
+
+---- GROUP ----
+
+>> Fill in the names of your group members.
+
+Braden Schroeder
+Nils Peterson
+Caleb Holland 
+
+---- PRELIMINARIES ----
+
+>> If you have any preliminary comments on your submission, notes for the
+>> TAs, or extra credit, please give them here.
+
+>> Please cite any offline or online sources you consulted while
+>> preparing your submission, other than the Pintos documentation, course
+>> text, lecture notes, and course staff.
+
+https://web.stanford.edu/class/cs140/projects/pintos/pintos_6.html
+https://github.com/ChristianJHughes/pintos-project3
+
+			PAGE TABLE MANAGEMENT
+			=====================
+
+---- ALGORITHMS ----
+
+>> A1: In a few paragraphs, describe the existing code for locating the
+>> frame, if any, that contains the data of a given page.
+
+The pages have their frame struct data stored inside of themselves.  This frame struct
+contains the location that its data can be found in memory.  If not, a page fault occurs 
+and triggers events leading to frame_alloc_and_lock().
+
+The code used for finding a frame is done in frame.c, starting in the 
+frame_alloc_and_lock.  This function tries 3 different times to allocate a 
+frame by passing its own page data into try_fram_alloc_and_lock() method.
+
+This function first attempts to find a free frame.  If there is a free frame
+the page is assigned to it.  If no frame is free we then attempt to evict a 
+frame.
+
+We increment through each page to see if it is currently in use or has 
+been accessed recently.  If neither of these things are true we assigne
+our page to that frame.
+
+---- SYNCHRONIZATION ----
+
+>> A2: When two user processes both need a new frame at the same time,
+>> how are races avoided?
+
+When we are searching through the frame table to find a frame,  we use the scan_lock.
+This can only be held by one process at a time and therefore prevents race conditions
+involved with finding a frame.
+
+		       PAGING TO AND FROM DISK
+		       =======================
+
+---- ALGORITHMS ----
+
+>> B1: When a frame is required but none is free, some frame must be
+>> evicted.  Describe the algorithm used to choose a frame to evict.
+
+This algorithm takes place in frame.c, specifically in the try_frame_alloc_and_lock(0
+function.  We iterate through each of the frames to see if one of them is free.  If so, 
+we use this frame, if not we continue.
+
+Again we iterate through the frames.  If we cannot acquire the lock of a frame (meaning
+that it is in use) we move on to the next frame.  We then check if the frame is NULL, and
+if it is we use this frame.  If its not null, we check to see if it has been accessed 
+recently, and if it has we move to the next frame.  Lastly, (if we haven't broken out of
+the function) we will page out the frame and use it.
+
+>> B2: Explain your heuristic for deciding whether a page fault for an
+>> invalid virtual address should cause the stack to be extended into
+>> the page that faulted.
+
+The first thing we do is insure that the page's address is less that the 
+PHYS_BASE minus the STACK_MAX.  This tells us that the address exists on the available 
+stack.
+
+The second check is to make sure that the page address is within 32 bites of the thread's 
+user ebp. This is to allow room for memory managing commands to function.  /////////////////////////////////////////////// CHECK ME AND CHANGE ME PLEASE 
+
+If both of these conditions pass we allocate the page.
+
+			 MEMORY MAPPED FILES
+			 ===================
+
+---- DATA STRUCTURES ----
+
+>> C1: Copy here the declaration of each new or changed `struct' or
+>> `struct' member, global or static variable, `typedef', or
+>> enumeration.  Identify the purpose of each in 25 words or less.
+
+No data structures were implemented. 
+
+---- ALGORITHMS ----
+
+>> C2: Describe how memory mapped files integrate into your virtual
+>> memory subsystem.  Explain how the page fault and eviction
+>> processes differ between swap pages and other pages.
+
+//
+
+>> C3: Explain how you determine whether a new file mapping overlaps
+>> any existing segment.
+
+//
+
+---- RATIONALE ----
+
+>> C4: Mappings created with "mmap" have similar semantics to those of
+>> data demand-paged from executables, except that "mmap" mappings are
+>> written back to their original files, not to swap.  This implies
+>> that much of their implementation can be shared.  Explain why your
+>> implementation either does or does not share much of the code for
+>> the two situations.
+
+//
+
+			   SURVEY QUESTIONS
+			   ================
+
+Answering these questions is optional, but it will help us improve the
+course in future quarters.  Feel free to tell us anything you
+want--these questions are just to spur your thoughts.  You may also
+choose to respond anonymously in the course evaluations at the end of
+the quarter.
+
+>> In your opinion, was this assignment, or any one of the three problems
+>> in it, too easy or too hard?  Did it take too long or too little time?
+
+>> Did you find that working on a particular part of the assignment gave
+>> you greater insight into some aspect of OS design?
+
+>> Is there some particular fact or hint we should give students in
+>> future quarters to help them solve the problems?  Conversely, did you
+>> find any of our guidance to be misleading?
+
+>> Do you have any suggestions for the TAs to more effectively assist
+>> students, either for future quarters or the remaining projects?
+
+>> Any other comments?
