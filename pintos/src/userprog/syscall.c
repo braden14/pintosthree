@@ -518,6 +518,11 @@ unmap (struct mapping *m)
       lock_release(&fs_lock);
     }
   }
+
+  for(int i = 0; i < m->page_cnt; i++)
+  {
+    page_deallocate((void*)((m->base) + (PGSIZE*i)));
+  }
   // code changes end
 }
 
